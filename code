@@ -1,0 +1,37 @@
+
+import numpy as np 
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import seaborn as sns 
+from sklearn.preprocessing import StandardScaler  , LabelEncoder 
+from sklearn.model_selection import train_test_split  , KFold 
+from xgboost import XGBRegressor 
+from sklearn.metrics import mean_squared_error
+#################################################
+## here you load data and preprocessing for it ##
+#################################################
+XGB_model  = XGBRegressor(n_estimators=1000,learning_rate=0.1,gamma=0.004 ,
+                          reg_alpha=0.004 , reg_lambda=0.04)
+                          
+# ********  trian and test model with multi learning rate to choise best one
+# you can test to hold best one 
+Kfold = KFold(n_splits=5 ,shuffle=True)
+lr = 0.1
+collect =[]
+for i in range(3):
+    XGB_model.learning_rate=lr
+    print('******** session (' ,i+1 , ')***********')
+    print('learning rate is : ' ,lr)
+    print("\n")
+    for epoch , (train_idx ,test_idx) in enumerate(Kfold.split(X ,y)):
+        X_tr = X.iloc[train_idx] 
+        X_val= X.iloc[test_idx]
+        y_tr = y.iloc[train_idx]
+        y_val= y.iloc[test_idx] 
+        XGB_model.fit(X_tr , y_tr)
+        predict = XGB_model.predict(X_val)
+        MSE = mean_squared_error(predict , y_val)
+        print(f'fold :{epoch+1} , MSE :{MSE}') 
+        test_prediction =XGB_model.predict(X_test)
+        collect.append(test_prediction)
+    lr +=0.3
